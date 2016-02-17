@@ -13,7 +13,7 @@ sevenZEx = r"7z.exe"
 sevenZDir = os.path.join(r"C:\Program Files\7-Zip",sevenZEx)
 splitRoot = r"D:\Test2"
 extractedRoot = r"D:\Extracted"
-videoTypes = ['.part01.rar']
+videoTypes = ['.part01.rar','.r00']
 files = []
 #Regexes
 showRegex = re.compile('^(.+?)[ .]-?[ .]?s(eason[. ]?)?([0-9]{1,2}) ?e(pisode[. ]?)?([0-9]{1,2})', re.IGNORECASE)
