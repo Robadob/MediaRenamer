@@ -14,7 +14,7 @@ videoTypes = ['.mp4', '.avi', '.mkv', '.wmv']
 files = []
 
 #Regexes
-showRegex = re.compile('^(.+?)[ .]-?[ .]?s(eason[. ]?)?([0-9]{1,2})[ .]?e(pisode[. ]?)?([0-9]{1,2})', re.IGNORECASE)
+showRegex = re.compile('^(.+?([. ][0-9]{4})?)[ .]-?[ .]?(s(eason[. ]?)?)?([0-9]{1,2}?)[ x.]?(e(pisode[. ]?)?)?([0-9]{2})', re.IGNORECASE)
 typeRegex = re.compile('\.([a-zA-Z0-9]+)$', re.IGNORECASE)
 
 #Build list 'files' of all video files to be handled
@@ -36,15 +36,15 @@ if os.path.exists('namePairs.cfg'):
 
 for file in files:
     filename = os.path.basename(file)
-    print(filename)
+    #print(filename)
     type = typeRegex.search(filename).group(0)
     show = showRegex.match(filename)
     if not(show):
         print("Cannot detect show details in file: %s" % (filename))
     else:
         showName = show.group(1).replace('.',' ').strip().lower()
-        showSeasonNo = int(show.group(3))
-        showEpisodeNo = int(show.group(5))
+        showSeasonNo = int(show.group(5))
+        showEpisodeNo = int(show.group(8))
         #print("%s - s%se%s - null" % (showName, showSeasonNo, showEpisodeNo))
         if not(showName in namePairs):
             showResults = tvdb.search(showName, 'en')
@@ -74,6 +74,8 @@ for file in files:
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName]
         showName = show.SeriesName
+        #Replace show name if desired
+        ##TODO
         showSeason = show[showSeasonNo]
         showEpisode = showSeason[showEpisodeNo]
         #Create new file name ~/Show Name/Show Name - sXXeYY - Episode Name.type
@@ -101,10 +103,11 @@ for file in files:
         newFilePath += cleanString(showEpisode.EpisodeName)
         #Append file type
         newFilePath += type
-        print(file)
-        print(newFilePath)
+        if file != newFilePath:
+            print(file)
+            print(newFilePath)
         #Move file
-        shutil.move(file, newFilePath)
+            shutil.move(file, newFilePath)
         
     #End loop - Next file
        

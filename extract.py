@@ -13,19 +13,20 @@ sevenZEx = r"7z.exe"
 sevenZDir = os.path.join(r"C:\Program Files\7-Zip",sevenZEx)
 splitRoot = r"D:\Test2"
 extractedRoot = r"D:\Extracted"
-videoTypes = ['.part01.rar','.r00']
+#videoTypes = ['.part01.rar','dve.rar','fov.rar','vf.rar','tla.rar']
+videoTypes = ['.rar']
 files = []
 #Regexes
-showRegex = re.compile('^(.+?)[ .]-?[ .]?s(eason[. ]?)?([0-9]{1,2}) ?e(pisode[. ]?)?([0-9]{1,2})', re.IGNORECASE)
-typeRegex = re.compile('\.([a-zA-Z0-9]+)$', re.IGNORECASE)
+unwantedRegex = re.compile('[0-9]?[02-9]\.rar$', re.IGNORECASE)
 
 #Build list 'files' of all video files to be handled
 for root, directories, filenames in os.walk(splitRoot):
     for filename in filenames: 
         for type in videoTypes:
             if filename.lower().endswith(type):
-                files.append(os.path.join(root,filename))
-                continue
+                if not(unwantedRegex.search(filename)):
+                    files.append(os.path.join(root,filename))
+                    continue
        
 print("%d video files to extract." % (len(files)))
 
