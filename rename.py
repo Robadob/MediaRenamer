@@ -1,39 +1,52 @@
-from pytvdbapi import api
-import os.path
-import re
-import shutil
-import pickle
+from pytvdbapi import api;
+import os.path;
+import re;
+import shutil;
+import pickle;
 
 #Cleans a string of chars which cannot be in a windows file path
 def cleanString( inp ):
-    inp = inp.replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','')
-    return inp
+    inp = inp.replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','');
+    return inp;
 
+def readDictionary ( inp ):
+    rtn = {};
+    for tln in open(inp):
+        tln = tln.strip('\n').strip('\r');
+        ln = tln.split('=');
+        if len(ln)==2:
+            rtn[ln[0]]=ln[1];
+        else:
+            print("Err unable to parse replacement: %s" % (tln));
+    return rtn;
+    
 videoRoot = 'D:\Test'
 videoTypes = ['.mp4', '.avi', '.mkv', '.wmv']
 files = []
 
 #Regexes
-showRegex = re.compile('^(.+?([. ][0-9]{4})?)[ .]-?[ .]?(s(eason[. ]?)?)?([0-9]{1,2}?)[ x.]?(e(pisode[. ]?)?)?([0-9]{2})', re.IGNORECASE)
-typeRegex = re.compile('\.([a-zA-Z0-9]+)$', re.IGNORECASE)
+showRegex = re.compile('^(.+?([. ][0-9]{4})?)[ .]-?[ .]?(s(eason[. ]?)?)?([0-9]{1,2}?)[ x.]?(e(pisode[. ]?)?)?([0-9]{2})', re.IGNORECASE);
+typeRegex = re.compile('\.([a-zA-Z0-9]+)$', re.IGNORECASE);
 
 #Build list 'files' of all video files to be handled
 for root, directories, filenames in os.walk(videoRoot):
     for filename in filenames: 
         for type in videoTypes:
             if filename.lower().endswith(type):
-                files.append(os.path.join(root,filename))
-                continue
+                files.append(os.path.join(root,filename));
+                continue;
        
-print("%d video files found for processing." % (len(files)))
+print("%d video files found for processing." % (len(files)));
 
-tvdb = api.TVDB('A0857036BEACEE1A')
-#pickle.dump(obj, file[, protocol])
+tvdb = api.TVDB('A0857036BEACEE1A');
+
 namePairs = {}
 if os.path.exists('namePairs.cfg'):
     namePairsF = open('namePairs.cfg', 'rb');
     namePairs = pickle.load(namePairsF);
 
+replacements = readDictionary('replacements.cfg');
+    
 for file in files:
     filename = os.path.basename(file)
     #print(filename)
@@ -75,7 +88,8 @@ for file in files:
         show = namePairs[showName]
         showName = show.SeriesName
         #Replace show name if desired
-        ##TODO
+        if showName in replacements:
+            showName = replacements[showName];
         showSeason = show[showSeasonNo]
         showEpisode = showSeason[showEpisodeNo]
         #Create new file name ~/Show Name/Show Name - sXXeYY - Episode Name.type
@@ -114,6 +128,5 @@ for file in files:
 #Cleanup any empty directories, nfos
 
 #Save namePairs
-
 namePairsF = open('namePairs.cfg', 'wb');
 pickle.dump(namePairs, namePairsF);
