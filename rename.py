@@ -6,7 +6,7 @@ import pickle;
 
 #Cleans a string of chars which cannot be in a windows file path
 def cleanString( inp ):
-    inp = inp.replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','');
+    inp = str(inp).replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','');
     return inp;
 
 def readDictionary ( inp ):
