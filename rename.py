@@ -83,7 +83,10 @@ for file in files:
                                 showResults=[showResults[int(option)]]
                 #Add show to the dictionary of namePairs and continue as though it was there to begin with
                 showName=oldShowName
-            namePairs[showName]=showResults[0]
+            namePairs[showName]=showResults[0];
+        else:
+            #Update show stored in namePairs
+            namePairs[showName]=tvdb.search(namePairs[showName].SeriesName, 'en')[0];
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName]
         showName = show.SeriesName
