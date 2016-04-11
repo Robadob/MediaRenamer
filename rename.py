@@ -121,8 +121,8 @@ for file in files:
         #Append file type
         newFilePath += type
         if file != newFilePath:
-            print(file)
-            print(newFilePath)
+            print(file.encode("utf-8"))
+            print(newFilePath.encode("utf-8"))
         #Move file
             shutil.move(file, newFilePath)
         
