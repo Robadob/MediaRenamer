@@ -27,11 +27,11 @@ def findShow ( showName, isSilent ):
     if len(showResults)!=1:
         while len(showResults)!=1:
             #If silent, exit with failure
-            if isSilent:
+            if isSilent or showName == "":
                 return "";
             #If no results, ask for new term and rerun search
             elif len(showResults) == 0:
-                print("'%s' does not resolve to any results, please enter an alternate search." %(showName))
+                print("'%s' does not resolve to any results, please enter an alternate search.\n Blank search will skip file." %(showName))
                 showName = input("Search term: ")
                 showResults = tvdb.search(showName, 'en')
             #If multiple results, prompt the user to select the desired
