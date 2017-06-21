@@ -9,6 +9,11 @@ import sys;
 def cleanString( inp ):
     inp = str(inp).replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','');
     return inp;
+#Cleans removes non standards symbols from show names before db search
+def cleanShowName( inp ):
+    inp = str(inp).replace('-',' ').replace('.',' ');
+    return inp;
+
 #Reads a plaintext dictionary from the file specified by arg
 def readDictionary ( inp ):
     rtn = {};
@@ -103,7 +108,7 @@ if videoDest=="":
     videoDest=videoRoot;
 
 #Regexes
-showRegex = re.compile('^(.+?([. ][0-9]{4})?)[ .]-?[ .]?(s(eason[. ]?)?)?([0-9]{1,2}?)[ x.]?(e(pisode[. ]?)?)?([0-9]{2})', re.IGNORECASE);
+showRegex = re.compile('^(.+?([. ][0-9]{4})?)[ .]-?[ .]?(s(eason[. ]?)?)?([0-9]{1,2})[ x.]?(e(pisode[. ]?)?)?([0-9]{2})[^p]', re.IGNORECASE);
 typeRegex = re.compile('\.([a-zA-Z0-9]+)$', re.IGNORECASE);
 
 #Build list 'files' of all video files to be handled
@@ -120,7 +125,8 @@ for root, directories, filenames in os.walk(videoRoot):
 if not(runSilent):       
     print("%d video files found for processing." % (len(files)));
 
-tvdb = api.TVDB('A0857036BEACEE1A');
+#tvdb = api.TVDB('A0857036BEACEE1A');
+tvdb = api.TVDB('B43FF87DE395DF56');
 
 namePairs = {}
 if os.path.exists('namePairs.cfg'):
@@ -138,7 +144,7 @@ for file in files:
         if not(runSilent): 
             print("Cannot detect show details in file: %s" % (filename))
     else:
-        showName = show.group(1).replace('.',' ').strip().lower()
+        showName = cleanShowName(show.group(1)).strip().lower()
         showSeasonNo = int(show.group(5))
         showEpisodeNo = int(show.group(8))
         #print("%s - s%se%s - null" % (showName, showSeasonNo, showEpisodeNo))
@@ -148,8 +154,8 @@ for file in files:
                 continue;
             namePairs[showName]=showNameConfirmed;
         else:
-            #Update show stored in namePairs
-            namePairs[showName]=tvdb.search(namePairs[showName].SeriesName, 'en')[0];
+            #Update show stored in namePairs (could optionally only run this if episode missing)
+            namePairs[showName].update();
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName]
         showName = show.SeriesName
