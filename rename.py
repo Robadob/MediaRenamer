@@ -136,17 +136,17 @@ if os.path.exists('namePairs.cfg'):
 replacements = readDictionary('replacements.cfg');
     
 for file in files:
-    filename = os.path.basename(file)
+    filename = os.path.basename(file);
     #print(filename)
-    type = typeRegex.search(filename).group(0)
-    show = showRegex.match(filename)
+    type = typeRegex.search(filename).group(0);
+    show = showRegex.match(filename);
     if not(show):
         if not(runSilent): 
-            print("Cannot detect show details in file: %s" % (filename))
+            print("Cannot detect show details in file: %s" % (filename));
     else:
-        showName = cleanShowName(show.group(1)).strip().lower()
-        showSeasonNo = int(show.group(5))
-        showEpisodeNo = int(show.group(8))
+        showName = cleanShowName(show.group(1)).strip().lower();
+        showSeasonNo = int(show.group(5));
+        showEpisodeNo = int(show.group(8));
         #print("%s - s%se%s - null" % (showName, showSeasonNo, showEpisodeNo))
         if not(showName in namePairs):
             showNameConfirmed = findShow(showName,runSilent);
@@ -157,45 +157,48 @@ for file in files:
             #Update show stored in namePairs (could optionally only run this if episode missing)
             namePairs[showName].update();
         #Show is now the desired show, so we can pull episode info
-        show = namePairs[showName]
-        showName = show.SeriesName
+        show = namePairs[showName];
+        showName = show.SeriesName;
         #Replace show name if desired
         if showName in replacements:
             showName = replacements[showName];
-        showSeason = show[showSeasonNo]
-        showEpisode = showSeason[showEpisodeNo]
+        showSeason = show[showSeasonNo];
+        showEpisode = showSeason[showEpisodeNo];
         #Create new file name ~/Show Name/Show Name - sXXeYY - Episode Name.type
         #runInplace?videoRoot:videoDest;
         newFilePath = videoRoot if runInplace else videoDest;
         #Ensure the root ends with a slash
         if not(newFilePath.endswith(os.path.sep)):
-            newFilePath += os.path.sep
+            newFilePath += os.path.sep;
         if not runInplace:
             #Append the show name as a directory
-            newFilePath += cleanString(showName)
-            newFilePath += os.path.sep
+            newFilePath += cleanString(showName);
+            newFilePath += os.path.sep;
             #Attempt to create that directory
             if not os.path.exists(newFilePath):
-                os.mkdir(newFilePath)
+                os.mkdir(newFilePath);
         #Append the show name as part of the file name
-        newFilePath += cleanString(showName)
-        newFilePath += ' - '
+        newFilePath += cleanString(showName);
+        newFilePath += ' - ';
         #Append the season number
-        newFilePath += 's'
-        newFilePath += format(showEpisode.SeasonNumber, '02')
+        newFilePath += 's';
+        newFilePath += format(showEpisode.SeasonNumber, '02');
         #Append the episode number
         newFilePath += 'e'
-        newFilePath += format(showEpisode.EpisodeNumber, '02')
-        newFilePath += ' - '
+        newFilePath += format(showEpisode.EpisodeNumber, '02');
+        newFilePath += ' - ';
         #Append episode name
-        newFilePath += cleanString(showEpisode.EpisodeName)
+        newFilePath += cleanString(showEpisode.EpisodeName);
         #Append file type
-        newFilePath += type
+        newFilePath += type;
         if file != newFilePath and not(runSilent):
-            print(file.encode("utf-8"))
-            print(newFilePath.encode("utf-8"))
+            print(file.encode("utf-8"));
+            print(newFilePath.encode("utf-8"));
         #Move file
-            shutil.move(file, newFilePath)
+            try :
+              shutil.move(file, newFilePath);
+            except PermissionError:
+              print("Cannot update file %s, access denied." % (file.encode("utf-8")));
         
     #End loop - Next file
        
