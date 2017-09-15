@@ -17,14 +17,34 @@ def cleanShowName( inp ):
 #Reads a plaintext dictionary from the file specified by arg
 def readDictionary ( inp ):
     rtn = {};
-    for tln in open(inp):
-        tln = tln.strip('\n').strip('\r');
-        ln = tln.split('=');
-        if len(ln)==2:
-            rtn[ln[0]]=ln[1];
-        else:
-            print("Err unable to parse replacement: %s" % (tln));
+    try:
+        for tln in open(inp):
+            tln = tln.strip('\n').strip('\r');
+            ln = tln.split('=');
+            if len(ln)==2:
+                rtn[ln[0]]=ln[1];
+            else:
+                print("Err unable to parse replacement: %s" % (tln));
+    except FileNotFoundError:
+        pass;
     return rtn;
+#def writeDictionary ( outDictionary, filePath ):
+#    with open(filePath, 'wb') as outFile:
+#        for key in outDictionary:
+#            outFile.write("%s=%s\n" % (key, outDictionary[value]));
+#Reads a plaintext array from the file specified by arg
+def readList ( inp ):
+    rtn = [];
+    try:
+        for tln in open(inp):
+            rtn.append(tln.strip('\n').strip('\r'));
+    except FileNotFoundError:
+        pass;
+    return rtn;
+def writeList ( outList, filePath ):
+    with open(filePath, 'w') as outFile:
+        for i in outList:
+            outFile.write("%s\n" % i);
 #Attempts to turn arg showName into a valid show name recognised by tvdb
 #Returns emptystring on failure
 def findShow ( showName, isSilent ):
@@ -134,15 +154,21 @@ if os.path.exists('namePairs.cfg'):
     namePairs = pickle.load(namePairsF);
 
 replacements = readDictionary('replacements.cfg');
+skip = readList('skip.cfg');
     
 for file in files:
-    filename = os.path.basename(file);
+    filename = os.path.basename(file);    
     #print(filename)
+    #Skip file if in skiplist
+    if any(filename in s for s in skip):
+        continue;
     type = typeRegex.search(filename).group(0);
     show = showRegex.match(filename);
     if not(show):
         if not(runSilent): 
             print("Cannot detect show details in file: %s" % (filename));
+        #Show skipped, add to skiplist
+        skip.append(filename);
     else:
         showName = cleanShowName(show.group(1)).strip().lower();
         showSeasonNo = int(show.group(5));
@@ -151,6 +177,8 @@ for file in files:
         if not(showName in namePairs):
             showNameConfirmed = findShow(showName,runSilent);
             if showNameConfirmed=="":
+                #Show skipped, add to skiplist
+                skip.append(filename);
                 continue;
             namePairs[showName]=showNameConfirmed;
         else:
@@ -195,15 +223,17 @@ for file in files:
             print(file.encode("utf-8"));
             print(newFilePath.encode("utf-8"));
         #Move file
-            try :
-              shutil.move(file, newFilePath);
+            try:
+                shutil.move(file, newFilePath);
             except PermissionError:
-              print("Cannot update file %s, access denied." % (file.encode("utf-8")));
+                print("Cannot update file %s, access denied." % (file.encode("utf-8")));
         
     #End loop - Next file
        
 #Cleanup any empty directories, nfos
 
+#Save skiplist
+writeList(skip,'skip.cfg'); 
 #Save namePairs
 namePairsF = open('namePairs.cfg', 'wb');
 pickle.dump(namePairs, namePairsF);

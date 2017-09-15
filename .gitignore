@@ -1,5 +1,8 @@
 # api-key
 tvdb.apikey
+skip.cfg
+replacements.cfg
+namePairs.cfg
 # Compiled Object files
 *.slo
 *.lo
