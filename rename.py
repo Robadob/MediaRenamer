@@ -190,8 +190,16 @@ for file in files:
         #Replace show name if desired
         if showName in replacements:
             showName = replacements[showName];
-        showSeason = show[showSeasonNo];
-        showEpisode = showSeason[showEpisodeNo];
+        try:
+            showSeason = show[showSeasonNo];
+        except:
+            print("'%s' season %d was not found, skipping file." %(showName,showSeasonNo));
+            continue;
+        try:
+            showEpisode = showSeason[showEpisodeNo];
+        except:
+            print("'%s' s%02de%02d has invalid episode no, skipping file." %(showName,showSeasonNo, showEpisodeNo));
+            continue;
         #Create new file name ~/Show Name/Show Name - sXXeYY - Episode Name.type
         #runInplace?videoRoot:videoDest;
         newFilePath = videoRoot if runInplace else videoDest;
