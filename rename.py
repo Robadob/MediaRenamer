@@ -65,9 +65,13 @@ def findShow ( showName, isSilent ):
                 for i in range(0,len(showResults)):
                     print("%d: %s" % (i, showResults[i].SeriesName))
                 print("x: Perform new search")
+                print("c: Cancel and skip file")
                 while len(showResults) > 1:
                     option = input("Enter desired option: ").strip().lower();
                     if option=='x':
+                        showResults=[]
+                    elif option=='c':
+                        showName = ""
                         showResults=[]
                     elif option.isdigit() and int(option) < len(showResults):
                         showResults=[showResults[int(option)]]
