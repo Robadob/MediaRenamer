@@ -3,16 +3,27 @@ import os.path
 import subprocess
 import re
 import shutil
+import sys;
 
 #Cleans a string of chars which cannot be in a windows file path
 def cleanString( inp ):
     inp = inp.replace('\\',', ').replace('/',', ').replace(':',', ').replace('*','').replace('?','').replace('"','').replace('<','(').replace('>',')').replace('|','')
     return inp
+    
+def printHelp():
+    print("Args not recognised");
+    print("Usage:");
+    print("extract.py <sourcePath> <destPath>");
+    exit();
 
+#Process Args
+if len(sys.argv)!=3:
+    printHelp();
+
+splitRoot = sys.argv[1];
+extractedRoot = sys.argv[2];
 sevenZEx = r"7z.exe"
 sevenZDir = os.path.join(r"C:\Program Files\7-Zip",sevenZEx)
-splitRoot = r"D:\Test2"
-extractedRoot = r"D:\Extracted"
 #videoTypes = ['.part01.rar','dve.rar','fov.rar','vf.rar','tla.rar']
 videoTypes = ['.rar']
 files = []
