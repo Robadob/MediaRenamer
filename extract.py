@@ -20,6 +20,7 @@ files = []
 unwantedRegex = re.compile('[0-9]?[02-9]\.rar$', re.IGNORECASE)
 isPartRegex = re.compile('\.part[0-9]{1,2}\.rar$', re.IGNORECASE)
 wantedPartRegex = re.compile('\.part0?1\.rar$', re.IGNORECASE)
+subsPostFix = "subs.rar"
 
 #Build list 'files' of all video files to be handled
 for root, directories, filenames in os.walk(splitRoot):
@@ -28,7 +29,7 @@ for root, directories, filenames in os.walk(splitRoot):
             #Ends with rar
             if filename.lower().endswith(type):
                 #Doesn't end with a part.rar that isn't part 1
-                if not(isPartRegex.search(filename)) or wantedPartRegex.search(filename):
+                if not(isPartRegex.search(filename)) or wantedPartRegex.search(filename) or filename.lower().endswith(subsPostFix):
                     files.append(os.path.join(root,filename))
                     continue
        
