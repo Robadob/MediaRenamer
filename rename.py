@@ -45,10 +45,31 @@ def writeList ( outList, filePath ):
     with open(filePath, 'w') as outFile:
         for i in outList:
             outFile.write("%s\n" % i);
+            
+def tvdbsearch (showName):
+    #Basic loop to give 5 attempts to TVDB api before crashing
+    showResults = []
+    retries = 0;
+    hasResult = False;
+    while not(hasResult):
+        try :
+            showResults = tvdb.search(showName, 'en')
+        except :
+          retries+=1;
+          print("\rAttempt %d/5 failed!" %(retries));
+          if retries<5:
+            continue
+          else:
+            print("\rtvdb.search() failed after 5 retries!");
+            raise
+        print("\r");
+        hasResult = True;
+    return showResults;
+    
 #Attempts to turn arg showName into a valid show name recognised by tvdb
 #Returns emptystring on failure
 def findShow ( showName, isSilent ):
-    showResults = tvdb.search(showName, 'en')
+    showResults = tvdbsearch(showName)
     if len(showResults)!=1:
         while len(showResults)!=1:
             #If silent, exit with failure
@@ -58,7 +79,7 @@ def findShow ( showName, isSilent ):
             elif len(showResults) == 0:
                 print("'%s' does not resolve to any results, please enter an alternate search.\n Blank search will skip file." %(showName))
                 showName = input("Search term: ")
-                showResults = tvdb.search(showName, 'en')
+                showResults = tvdbsearch(showName)
             #If multiple results, prompt the user to select the desired
             elif len(showResults) > 1:#Could also check result 1 isn't identical to cleaned show name
                 print("'%s' has multiple results, please select desired result." %(showName))
