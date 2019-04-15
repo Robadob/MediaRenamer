@@ -212,6 +212,10 @@ for file in files:
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName];
         showName = show.SeriesName;
+        #If show name is a list (seems to occur when showname contains '|')
+        #Concat the elements
+        if isinstance(showName, (list,)):
+          showName = ', '.join(showName);
         #Replace show name if desired
         if showName in replacements:
             showName = replacements[showName];
