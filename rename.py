@@ -65,6 +65,9 @@ def tvdbsearch (showName):
         print("\r");
         hasResult = True;
     return showResults;
+#TVDB returns strings in unicode, this causes crashes where certain foreign characters are found
+def stripUnicode (inp):
+    return (b"".join([x.encode('ascii', 'replace') for x in inp])).decode()
     
 #Attempts to turn arg showName into a valid show name recognised by tvdb
 #Returns emptystring on failure
@@ -84,7 +87,7 @@ def findShow ( showName, isSilent ):
             elif len(showResults) > 1:#Could also check result 1 isn't identical to cleaned show name
                 print("'%s' has multiple results, please select desired result." %(showName))
                 for i in range(0,len(showResults)):
-                    print("%d: %s" % (i, showResults[i].SeriesName))
+                    print("%d: %s" % (i, stripUnicode(showResults[i].SeriesName)))
                 print("x: Perform new search")
                 print("c: Cancel and skip file")
                 while len(showResults) > 1:
@@ -211,7 +214,7 @@ for file in files:
             namePairs[showName].update();
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName];
-        showName = show.SeriesName;
+        showName = stripUnicode(show.SeriesName);
         #If show name is a list (seems to occur when showname contains '|')
         #Concat the elements
         if isinstance(showName, (list,)):
@@ -253,7 +256,7 @@ for file in files:
         newFilePath += format(showEpisode.EpisodeNumber, '02');
         newFilePath += ' - ';
         #Append episode name
-        newFilePath += cleanString(showEpisode.EpisodeName);
+        newFilePath += cleanString(stripUnicode(showEpisode.EpisodeName));
         #Append file type
         newFilePath += type;
         if file != newFilePath and not(runSilent):
