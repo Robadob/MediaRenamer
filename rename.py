@@ -26,6 +26,7 @@ def readDictionary ( inp ):
             else:
                 print("Err unable to parse replacement: %s" % (tln));
     except FileNotFoundError:
+        print("Unable to load dictionary: %s"%(inp))
         pass;
     return rtn;
 #def writeDictionary ( outDictionary, filePath ):
