@@ -34,6 +34,9 @@ def enumerateFilesToDirectory(dirPath):
                 showDirectory[showName][seasonNo] = set();
               if not(episodeNo in showDirectory[showName][seasonNo]):
                 showDirectory[showName][seasonNo].add(episodeNo);
+              #Support for e0xe0y format
+              if show.group(4)!=None:
+                showDirectory[showName][seasonNo].add(int(show.group(5)));
                 
 def tvdbsearch (showName):
     #Basic loop to give 5 attempts to TVDB api before crashing
@@ -45,13 +48,13 @@ def tvdbsearch (showName):
             showResults = tvdb.search(showName, 'en')
         except :
           retries+=1;
-          print("\rAttempt %d/5 failed!" %(retries));
+          print("\rAttempt %d/5 failed!" %(retries), end="");
           if retries<5:
             continue
           else:
-            print("\rtvdb.search() failed after 5 retries!");
+            print("\rtvdb.search() failed after 5 retries!", end="");
             raise
-        print("\r");
+        print("\r", end="");
         hasResult = True;
     return showResults;
 '''
