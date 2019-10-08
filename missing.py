@@ -3,6 +3,7 @@ import os.path;
 import re;
 import sys;
 import pickle;
+from datetime import date;
 
 
 def readInvertedDictionary ( inp ):
@@ -57,11 +58,31 @@ def tvdbsearch (showName):
         print("\r", end="");
         hasResult = True;
     return showResults;
+    
+def daysSince (showDateTime):
+  delta = date.today() - showDateTime;
+  deltaSeconds = delta.total_seconds();
+  deltaMinutes = deltaSeconds/60;
+  deltaHours = deltaMinutes/60;
+  deltaDays = deltaHours/24;
+  return deltaDays;
 '''
 Main Entry Point
 '''
 tvdb = api.TVDB('B43FF87DE395DF56');
 showRegex = re.compile('^(.+) - s([0-9]{2})e([0-9]{2})(e([0-9]{2}))?', re.IGNORECASE);
+
+#parse args
+filterDays=0;
+i = 1
+while i < (len(sys.argv)-1):
+  if sys.argv[i]=="-d" :
+    filterDays = int(sys.argv[i+1]);
+    i = i+2;
+    continue;
+  else:
+    print("Unexpected arg: %s"%(sys.argv[i]));
+    sys.exit();
 
 videoRoot = sys.argv[len(sys.argv)-1];
 
@@ -103,6 +124,7 @@ for show, mySeasons in showDirectory.items():
       myEpisodes = mySeasons[str(season.season_number)];
       for episode in season:
         if not(episode.EpisodeNumber in myEpisodes):
-          print("Missing: %s - s%02de%02d"%(show, season.season_number, episode.EpisodeNumber));
-    else:
+          if filterDays==0 or filterDays>=daysSince(episode.FirstAired):
+            print("Missing: %s - s%02de%02d"%(show, season.season_number, episode.EpisodeNumber));
+    elif filterDays==0 or filterDays>=daysSince(season[len(season)-1].FirstAired):
       print("Missing: %s - s%02d"%(show, season.season_number));
