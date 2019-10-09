@@ -60,12 +60,27 @@ def tvdbsearch (showName):
     return showResults;
     
 def daysSince (showDateTime):
+  if not isinstance(showDateTime,date):
+    #Show only contains a dateless episodes
+    return None;
   delta = date.today() - showDateTime;
   deltaSeconds = delta.total_seconds();
   deltaMinutes = deltaSeconds/60;
   deltaHours = deltaMinutes/60;
   deltaDays = deltaHours/24;
   return deltaDays;
+  
+def getLastEpisodeDate(tvdbSeason):
+  rtn = None;
+  for ep in tvdbSeason:
+      if isinstance(ep.FirstAired,date):
+        # If we are ignoring future shows, ignore future shows here
+        if not(notYetAired) and ep.FirstAired > date.today():
+          continue;
+        if rtn==None or rtn < ep.FirstAired:
+          rtn = ep.FirstAired;
+  return rtn;
+  
 '''
 Main Entry Point
 '''
@@ -74,11 +89,16 @@ showRegex = re.compile('^(.+) - s([0-9]{2})e([0-9]{2})(e([0-9]{2}))?', re.IGNORE
 
 #parse args
 filterDays=0;
+notYetAired = False
 i = 1
 while i < (len(sys.argv)-1):
   if sys.argv[i]=="-d" :
     filterDays = int(sys.argv[i+1]);
     i = i+2;
+    continue;
+  if sys.argv[i]=="-f":
+    notYetAired = True;
+    i = i+1
     continue;
   else:
     print("Unexpected arg: %s"%(sys.argv[i]));
@@ -124,7 +144,26 @@ for show, mySeasons in showDirectory.items():
       myEpisodes = mySeasons[str(season.season_number)];
       for episode in season:
         if not(episode.EpisodeNumber in myEpisodes):
-          if filterDays==0 or filterDays>=daysSince(episode.FirstAired):
-            print("Missing: %s - s%02de%02d"%(show, season.season_number, episode.EpisodeNumber));
-    elif filterDays==0 or filterDays>=daysSince(season[len(season)-1].FirstAired):
+          #Reasons for rejection
+          if filterDays!=0:
+            days = daysSince(episode.FirstAired)
+            if days==None:
+              continue
+            elif not(notYetAired) and days<0:
+              continue
+            elif filterDays<days:
+              continue
+          #Episode wasn't rejected
+          print("Missing: %s - s%02de%02d"%(show, season.season_number, episode.EpisodeNumber));
+    else:
+      #Reasons for rejection
+      if filterDays!=0:
+        days = daysSince(getLastEpisodeDate(season))
+        if days==None:
+          continue
+        elif not(notYetAired) and days<0:
+          continue
+        elif filterDays<days:
+          continue
+      #Season wasn't rejected
       print("Missing: %s - s%02d"%(show, season.season_number));
