@@ -110,6 +110,7 @@ videoRoot = ".";
 videoDest = "";
 videoTypes = [".mp4", ".avi", ".mkv", ".wmv"];
 files = [];
+dropShows = [];
 
 def printHelp():
     print("Usage:");
@@ -119,11 +120,14 @@ def printHelp():
     print("-recurse, -r: Recursively find files in source path");
     print("-inplace, -i: Rename files inplace, not compatible with -dest or -d");
     print("-dest <destPath>, -d <destPath>: Specify a destination path (else source will be used)");
+    print("-drop <showName>: Specify a showname to be dropped from namePairs");
     exit();  
 
 #Process Args
 if len(sys.argv)>1:
-    for i in range(1,len(sys.argv)-1):
+    i = 0;
+    while i < len(sys.argv)-2:
+        i=i+1;
         if sys.argv[i]=="-help" or sys.argv[i]=="-?":
             printHelp();
         elif sys.argv[i]=="-silent" or sys.argv[i]=="-s":
@@ -139,8 +143,15 @@ if len(sys.argv)>1:
             else:
                 print("-dest, -d args require a trailing arg");
                 printHelp();
+        elif sys.argv[i]=="-drop":
+            i=i+1;
+            if i < (len(sys.argv)-1):
+                dropShows.append(sys.argv[i]);
+            else:
+                print("-drop args require a trailing arg");
+                printHelp();
         else:
-            print("Arg '%s' was not recognised." % (ys.argv[i]));
+            print("Arg '%s' was not recognised."%(sys.argv[i]));
             printHelp();
 else:
     printHelp();
@@ -174,13 +185,29 @@ for root, directories, filenames in os.walk(videoRoot):
 if not(runSilent):       
     print("%d video files found for processing." % (len(files)));
 
-#tvdb = api.TVDB('A0857036BEACEE1A');
-tvdb = api.TVDB('B43FF87DE395DF56');
+tvdb = api.TVDB('A0857036BEACEE1A');
+# tvdb = api.TVDB('9E8E50DD-AF0C-45D5-BDC4-2A4BFEBEA36D');
 
 namePairs = {}
 if os.path.exists('namePairs.cfg'):
     namePairsF = open('namePairs.cfg', 'rb');
     namePairs = pickle.load(namePairsF);
+
+# Drop requested shows
+for show in dropShows:
+    showName = cleanShowName(show);
+    if showName in namePairs:
+        print("Confirm that show '%s' should be dropped."%(show));
+        option = input("Confirm [Y/N]: ").strip().lower();
+        if option=='y':
+            del namePairs[showName];
+    elif showName.lower() in namePairs:
+        print("Confirm that show '%s' should be dropped."%(show));
+        option = input("Confirm [Y/N]: ").strip().lower();
+        if option=='y':
+            del namePairs[showName.lower()];
+    else:
+        print("Show '%s' was not found to be dropped."%(show));
 
 replacements = readDictionary('replacements.cfg');
 skip = readList('skip.cfg');
@@ -212,7 +239,10 @@ for file in files:
             namePairs[showName]=showNameConfirmed;
         else:
             #Update show stored in namePairs (could optionally only run this if episode missing)
-            namePairs[showName].update();
+            try:
+              namePairs[showName].update();
+            except:
+              print("Failed to update show: %s with DB." %(showName));
         #Show is now the desired show, so we can pull episode info
         show = namePairs[showName];
         showName = stripUnicode(show.SeriesName);
