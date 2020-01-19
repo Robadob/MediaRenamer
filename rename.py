@@ -4,6 +4,7 @@ import re;
 import shutil;
 import pickle;
 import sys;
+import numbers;
 
 #Cleans a string of chars which cannot be in a windows file path
 def cleanString( inp ):
@@ -68,6 +69,8 @@ def tvdbsearch (showName):
     return showResults;
 #TVDB returns strings in unicode, this causes crashes where certain foreign characters are found
 def stripUnicode (inp):
+    if isinstance(inp, numbers.Number):
+      inp = str(inp)
     return (b"".join([x.encode('ascii', 'replace') for x in inp])).decode()
     
 #Attempts to turn arg showName into a valid show name recognised by tvdb
